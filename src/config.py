@@ -6,6 +6,10 @@ class Config:
     WIFI_PASSWORD = ""
     MQTT_BROKER_URL = ""
 
+    # ** STEPPER CONFIG ** #
+    STEP_TIME_US = 100
+    STEPS_PER_REV = 1600
+
     # ** PIN DEFINITIONS ** #
     # Step Pin
     PIN_STEP = const(19)
@@ -15,4 +19,3 @@ class Config:
     PIN_EN = const(22)
     # Reset Pin
     PIN_RESET = const(21)
-

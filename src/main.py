@@ -13,7 +13,10 @@ def mqtt_callback(topic, msg, retained):
 
 topic_list = [
     "blinder/open",
-    "blinder/close"
+    "blinder/close",
+    "blinder/reset",
+    "blinder/enable",
+    "blinder/disable"
 ]
 
 
@@ -38,13 +41,13 @@ async def main():
     # Get configuration
     config = Config()
 
-    # Pin definitions
-    i2c_scl_pin = machine.Pin(config.PIN_I2C_SCL)
-    i2c_sda_pin = machine.Pin(config.PIN_I2C_SDA)
-
     # Blind and system config
-    i2c = machine.SoftI2C(scl=i2c_scl_pin, sda=i2c_sda_pin, freq=400_000)
-    blinds = blinder.Blinder(i2c)
+    blinds = blinder.Blinder(
+        step=Config.PIN_STEP,
+        dir=Config.PIN_DIR,
+        en=Config.PIN_EN,
+        rst=Config.PIN_RESET
+    )
     net = Network(config)
 
     # MQTT Config
@@ -64,11 +67,20 @@ async def main():
                 callback = callback_list.pop()
                 print("Processing callback...")
                 if callback.TOPIC in "blinder/open":
-                    print("Open blinders callback")
-                    await blinds.open()
+                    print("Open blinds callback")
+                    blinds.open()
                 elif callback.TOPIC in "blinder/close":
                     print("Close blinds callback")
-                    await blinds.close()
+                    blinds.close()
+                elif callback.TOPIC in "blinder/reset":
+                    print("Reset blinds callback")
+                    blinds.reset()
+                elif callback.TOPIC in "blinder/enable":
+                    print("Enable blinds callback")
+                    blinds.enable()
+                elif callback.TOPIC in "blinder/disable":
+                    print("Disable blinds callback")
+                    blinds.disable()
                 else:
                     print("No match for topic")
                     print(callback.TOPIC)
@@ -77,7 +89,6 @@ async def main():
                 await uasyncio.sleep(1)
 
     finally:
-        door.stop()
         client.close()  # Prevent LmacRxBlk:1 errors
 
 

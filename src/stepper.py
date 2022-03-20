@@ -1,6 +1,7 @@
 """Micropython module for stepper motor driven by Easy Driver."""
 from machine import Pin
 from time import sleep, sleep_us
+from config import Config
 
 
 class Stepper:
@@ -8,34 +9,29 @@ class Stepper:
 
     def __init__(self, step_pin, dir_pin, enable_pin, reset_pin):
         """Initialise stepper."""
-        self.stp = step_pin
-        self.dir = dir_pin
-        self.en = enable_pin
-        self.rst = reset_pin
+        self.stp = Pin(step_pin, Pin.OUT)
+        self.dir = Pin(dir_pin, Pin.OUT)
+        self.en_n = Pin(enable_pin, Pin.OUT)
+        self.rst_n = Pin(reset_pin, Pin.OUT)
 
-        self.stp.init(Pin.OUT)
-        self.dir.init(Pin.OUT)
-        self.en.init(Pin.OUT)
-        self.rst.init(Pin.OUT)
-
-        self.step_time = 20  # us
-        self.steps_per_rev = 1600
+        self.step_time = Config.STEP_TIME_US
+        self.steps_per_rev = Config.STEPS_PER_REV
         self.current_position = 0
 
     def enable(self):
         """Power on stepper."""
-        self.en.value(1)
+        self.en_n.value(0)
 
     def disable(self):
         """Power off stepper."""
-        self.en.value(0)
+        self.en_n.value(1)
         self.current_position = 0
     
     def reset(self):
         """Reset driver."""
-        self.rst.value(1)
+        self.rst_n.value(0)
         sleep(1)
-        self.rst.value(0)
+        self.rst_n.value(1)
 
     def steps(self, step_count):
         """Rotate stepper for given steps."""
